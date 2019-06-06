@@ -1,9 +1,6 @@
 # JLoxInterpreter
 Java implementation of the Lox programming language from the book "Crafting Interpreters"
 
-# JLox
-Java implementation of the Lox programming language from the book "Crafting Interpreters"
-
 ## Lox Lexical Grammar
 ```
 NUMBER          → DIGIT+ ( "." DIGIT+ )? ;
