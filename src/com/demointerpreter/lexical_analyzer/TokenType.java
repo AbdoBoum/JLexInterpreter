@@ -17,121 +17,121 @@ public enum TokenType {
         String text = "";
         switch (this) {
             case LEFT_BRACE:
-                text = "{";
+                text = "LEFT_BRACE";
                 break;
             case RIGHT_BRACE:
-                text = "}";
+                text = "RIGHT_BRACE";
                 break;
             case LEFT_PAR:
-                text = "(";
+                text = "LEFT_PAR";
                 break;
             case RIGHT_PAR:
-                text = ")";
+                text = "RIGHT_PAR";
                 break;
             case EQ:
-                text = "=";
+                text = "EQ";
                 break;
             case EQ_EQ:
-                text = "==";
+                text = "EQ_EQ";
                 break;
             case COMMA:
-                text = ",";
+                text = "COMMA";
                 break;
             case DOT:
-                text = ".";
+                text = "DOT";
                 break;
             case SEMICOLON:
-                text = ";";
+                text = "SEMICOLON";
                 break;
             case PLUS:
-                text = "+";
+                text = "PLUS";
                 break;
             case MINUS:
-                text = "-";
+                text = "MINUS";
                 break;
             case SLASH:
-                text = "/";
+                text = "SLASH";
                 break;
             case IF:
-                text = "if";
+                text = "IF";
                 break;
             case AND:
-                text = "and";
+                text = "AND";
                 break;
             case OR:
-                text = "or";
+                text = "OR";
                 break;
             case EOF:
                 text = "EOF";
                 break;
             case FOR:
-                text = "for";
+                text = "FOR";
                 break;
             case FUN:
-                text = "fun";
+                text = "FUN";
                 break;
             case IDF:
-                text = "idf";
+                text = "IDF";
                 break;
             case NIL:
-                text = "nil";
+                text = "NIL";
                 break;
             case VAR:
-                text = "var";
+                text = "VAR";
                 break;
             case BANG:
-                text = "!";
+                text = "BANG";
                 break;
             case ELSE:
-                text = "else";
+                text = "ELSE";
                 break;
             case LESS:
-                text = "<";
+                text = "LESS";
                 break;
             case STAR:
-                text = "*";
+                text = "STAR";
                 break;
             case THIS:
-                text = "this";
+                text = "THIS";
                 break;
             case TRUE:
-                text = "true";
+                text = "TRUE";
                 break;
             case CLASS:
-                text = "class";
+                text = "CLASS";
                 break;
             case FALSE:
-                text = "false";
+                text = "FALSE";
                 break;
             case PRINT:
-                text = "print";
+                text = "PRINT";
                 break;
             case SUPER:
-                text = "super";
+                text = "SUPER";
                 break;
             case WHILE:
                 text = "while";
                 break;
             case RETURN:
-                text = "return";
+                text = "RETURN";
                 break;
             case BANG_EQ:
-                text = "!=";
+                text = "BANG_EQ";
                 break;
             case GREATER:
-                text = ">";
+                text = "GREATER";
                 break;
             case GREATER_EQ:
-                text = ">=";
+                text = "GREATER_EQ";
                 break;
             case LESS_EQ:
-                text = "<=";
+                text = "LESS_EQ";
                 break;
             case NUMBER:
-                text = "number";
+                text = "NUMBER";
                 break;
             case STRING:
-                text = "string";
+                text = "STRING";
                 break;
         }
         return text;

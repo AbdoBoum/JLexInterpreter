@@ -1,0 +1,11 @@
+1234 // this is a comment
+/* this is another comment */ var
+_dj /* dfjjzfjjsdfjd
+
+*/ _jd
+
+// expect: NUMBER 1234 1234.0
+// expect: VAR var null
+// expect: IDF _dj null
+// expect: IDF _jd null
+// expect: EOF  null

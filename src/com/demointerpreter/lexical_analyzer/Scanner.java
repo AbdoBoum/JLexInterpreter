@@ -1,6 +1,7 @@
 package com.demointerpreter.lexical_analyzer;
 
 import com.demointerpreter.Main;
+import com.sun.xml.internal.bind.v2.TODO;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -65,6 +66,9 @@ public class Scanner {
             case '(':
                 addToken(LEFT_PAR);
                 break;
+            case '*':
+                addToken(STAR);
+                break;
             case ')':
                 addToken(RIGHT_PAR);
                 break;
@@ -82,11 +86,13 @@ public class Scanner {
                 break;
             case ',':
                 addToken(COMMA);
+                break;
             case '+':
                 addToken(PLUS);
                 break;
             case '-':
                 addToken(MINUS);
+                break;
             case '>':
                 addToken(match('=') ? GREATER_EQ : GREATER);
                 break;
@@ -101,10 +107,13 @@ public class Scanner {
                 break;
             case '/':
                 if (match('/')) {
-                    while (peek() != '\n' && !isEnd()) advance();
+                    skipOneLineComment();
+                } else if (match('*')) {
+                    skipBlockComment();
                 } else {
                     addToken(SLASH);
                 }
+                break;
             case '\n':
                 line++;
                 break;
@@ -195,11 +204,34 @@ public class Scanner {
     private boolean isAlpha(char c) {
         return (c >= 'A' && c <= 'Z') ||
                 (c >= 'a' && c <= 'z') ||
-                c == '-';
+                c == '_';
     }
+
 
     private boolean isAlphaNumeric(char c) {
         return isDigit(c) || isAlpha(c);
+    }
+
+    private void skipOneLineComment() {
+        while (peek() != '\n' && !isEnd()) {
+            advance();
+        }
+    }
+
+    //TODO: adding nested block comments
+    private void skipBlockComment() {
+        while ((peek() != '*' && peekNext() != '/') && !isEnd()) {
+            if (peek() == '\n') {
+                line++;
+            }
+            advance();
+        }
+        if (isEnd()) {
+            Main.error(line, "Unterminated block comment.");
+        } else {
+            advance();
+            advance(); //To consume */
+        }
     }
 
     public void addToken(TokenType type) {
