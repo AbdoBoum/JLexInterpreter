@@ -1,7 +1,6 @@
 package com.demointerpreter.lexical_analyzer;
 
 import com.demointerpreter.Main;
-import com.sun.xml.internal.bind.v2.TODO;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -164,10 +163,12 @@ public class Scanner {
         }
         if (isEnd()) {
             Main.error(line, "Unterminated String");
+        } else {
+            advance();
+            String lexem = source.substring(start + 1, current - 1);
+            addToken(STRING, lexem);
         }
-        advance();
-        String lexem = source.substring(start + 1, current - 1);
-        addToken(STRING, lexem);
+
     }
 
     private boolean isDigit(char c) {
