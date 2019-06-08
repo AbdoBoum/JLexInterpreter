@@ -2,9 +2,21 @@ package com.demointerpreter.grammar;
 
 import com.demointerpreter.lexical_analyzer.Token;
 
-abstract class Expression {
+public interface Expression {
 
-    static class Binary extends Expression {
+    <R> R accept(Visitor<R> visitor);
+
+    interface Visitor<R> {
+        R visitBinaryExpression(Binary expression);
+
+        R visitGroupingExpression(Grouping expression);
+
+        R visitLiteralExpression(Literal expression);
+
+        R visitUnaryExpression(Unary expression);
+    }
+
+    public static class Binary implements Expression {
         public Expression left;
         public Token operator;
         public Expression right;
@@ -15,27 +27,36 @@ abstract class Expression {
             this.right = right;
         }
 
+        public <R> R accept(Visitor<R> visitor) {
+            return visitor.visitBinaryExpression(this);
+        }
     }
 
-    static class Grouping extends Expression {
+    public static class Grouping implements Expression {
         public Expression expression;
 
         public Grouping(Expression expression) {
             this.expression = expression;
         }
 
+        public <R> R accept(Visitor<R> visitor) {
+            return visitor.visitGroupingExpression(this);
+        }
     }
 
-    static class Literal extends Expression {
+    public static class Literal implements Expression {
         public Object value;
 
         public Literal(Object value) {
             this.value = value;
         }
 
+        public <R> R accept(Visitor<R> visitor) {
+            return visitor.visitLiteralExpression(this);
+        }
     }
 
-    static class Unary extends Expression {
+    public static class Unary implements Expression {
         public Token operator;
         public Expression right;
 
@@ -44,5 +65,8 @@ abstract class Expression {
             this.right = right;
         }
 
+        public <R> R accept(Visitor<R> visitor) {
+            return visitor.visitUnaryExpression(this);
+        }
     }
 }
