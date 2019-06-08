@@ -2,7 +2,6 @@ package com.demointerpreter.tool;
 
 
 import com.demointerpreter.grammar.Expression;
-import com.demointerpreter.lexical_analyzer.Token;
 import com.demointerpreter.lexical_analyzer.TokenType;
 
 /**
@@ -49,10 +48,25 @@ public class AstPrinter implements Expression.Visitor<String> {
         return parenthesize(expression.operator.getText(), expression.right);
     }
 
+    @Override
+    public String visitLogicalExpression(Expression.Logical expression) {
+        return parenthesize(expression.operator.getText(), expression.left, expression.right);
+    }
+
+    @Override
+    public String visitAssignExpression(Expression.Assign expression) {
+        return parenthesize(TokenType.EQ.toString() + expression.name.getText(), expression.value);
+    }
+
+    @Override
+    public String visitThisExpression(Expression.This expression) {
+        return expression.keyword.getText();
+    }
+
     private String parenthesize(String name, Expression... expressions) {
         StringBuilder builder = new StringBuilder();
         builder.append("(").append(name);
-        for (Expression expression: expressions) {
+        for (Expression expression : expressions) {
             builder.append(" ");
             builder.append(expression.accept(this));
         }

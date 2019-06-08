@@ -29,10 +29,10 @@ public enum TokenType {
                 text = "RIGHT_PAR";
                 break;
             case EQ:
-                text = "EQ";
+                text = "=";
                 break;
             case EQ_EQ:
-                text = "EQ_EQ";
+                text = "==";
                 break;
             case COMMA:
                 text = "COMMA";

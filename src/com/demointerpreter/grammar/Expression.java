@@ -14,6 +14,12 @@ public interface Expression {
         R visitLiteralExpression(Literal expression);
 
         R visitUnaryExpression(Unary expression);
+
+        R visitLogicalExpression(Logical expression);
+
+        R visitAssignExpression(Assign expression);
+
+        R visitThisExpression(This expression);
     }
 
     public static class Binary implements Expression {
@@ -67,6 +73,48 @@ public interface Expression {
 
         public <R> R accept(Visitor<R> visitor) {
             return visitor.visitUnaryExpression(this);
+        }
+    }
+
+    public static class Logical implements Expression {
+        public Expression left;
+        public Token operator;
+        public Expression right;
+
+        public Logical(Expression left, Token operator, Expression right) {
+            this.left = left;
+            this.operator = operator;
+            this.right = right;
+        }
+
+        public <R> R accept(Visitor<R> visitor) {
+            return visitor.visitLogicalExpression(this);
+        }
+    }
+
+    public static class Assign implements Expression {
+        public Token name;
+        public Expression value;
+
+        public Assign(Token name, Expression value) {
+            this.name = name;
+            this.value = value;
+        }
+
+        public <R> R accept(Visitor<R> visitor) {
+            return visitor.visitAssignExpression(this);
+        }
+    }
+
+    public static class This implements Expression {
+        public Token keyword;
+
+        public This(Token keyword) {
+            this.keyword = keyword;
+        }
+
+        public <R> R accept(Visitor<R> visitor) {
+            return visitor.visitThisExpression(this);
         }
     }
 }
