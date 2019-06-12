@@ -1,7 +1,10 @@
 package com.demointerpreter;
 
+import com.demointerpreter.Parser.Parser;
+import com.demointerpreter.grammar.Expression;
 import com.demointerpreter.lexical_analyzer.Scanner;
 import com.demointerpreter.lexical_analyzer.Token;
+import com.demointerpreter.tool.AstPrinter;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -10,6 +13,8 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
+
+import static com.demointerpreter.lexical_analyzer.TokenType.*;
 
 public class Main {
 
@@ -47,9 +52,10 @@ public class Main {
         }
         Scanner scanner = new Scanner(src);
         List<Token> tokens = scanner.scanTokens();
-        for (Token token: tokens) {
-            System.out.println(token.toString());
-        }
+        Parser parser = new Parser(tokens);
+        Expression expression = parser.parse();
+        if (hadError) return;
+        System.out.println(new AstPrinter().print(expression));
     }
 
     public static void error(int line, String message) {
@@ -60,6 +66,14 @@ public class Main {
         System.err.println(
                 "[line " + line + "] Error" + where + ": " + message);
         hadError = true;
+    }
+
+    public static void error(Token token, String message) {
+        if(token.getType() == EOF) {
+            report(token.getLine(), " at end", message);
+        } else {
+            report(token.getLine(), "at " + token.getText(), message);
+        }
     }
 
 }

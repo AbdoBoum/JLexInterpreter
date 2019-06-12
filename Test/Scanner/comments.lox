@@ -2,7 +2,11 @@
 /* this is another comment */ var
 _dj /* dfjjzfjjsdfjd
 
+/*fzef/**/zefz*/
+
 */ _jd
+
+//Test/Scanner/comments.lox
 
 // expect: NUMBER 1234 1234.0
 // expect: VAR var null

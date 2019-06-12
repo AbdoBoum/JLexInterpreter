@@ -22,7 +22,7 @@ public interface Expression {
         R visitThisExpression(This expression);
     }
 
-    public static class Binary implements Expression {
+    class Binary implements Expression {
         public Expression left;
         public Token operator;
         public Expression right;
@@ -38,7 +38,7 @@ public interface Expression {
         }
     }
 
-    public static class Grouping implements Expression {
+    class Grouping implements Expression {
         public Expression expression;
 
         public Grouping(Expression expression) {
@@ -50,7 +50,7 @@ public interface Expression {
         }
     }
 
-    public static class Literal implements Expression {
+    class Literal implements Expression {
         public Object value;
 
         public Literal(Object value) {
@@ -62,7 +62,7 @@ public interface Expression {
         }
     }
 
-    public static class Unary implements Expression {
+    class Unary implements Expression {
         public Token operator;
         public Expression right;
 
@@ -76,7 +76,7 @@ public interface Expression {
         }
     }
 
-    public static class Logical implements Expression {
+    class Logical implements Expression {
         public Expression left;
         public Token operator;
         public Expression right;
@@ -92,7 +92,7 @@ public interface Expression {
         }
     }
 
-    public static class Assign implements Expression {
+    class Assign implements Expression {
         public Token name;
         public Expression value;
 
@@ -106,7 +106,7 @@ public interface Expression {
         }
     }
 
-    public static class This implements Expression {
+    class This implements Expression {
         public Token keyword;
 
         public This(Token keyword) {

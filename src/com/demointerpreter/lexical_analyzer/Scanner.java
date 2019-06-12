@@ -11,10 +11,12 @@ import static com.demointerpreter.lexical_analyzer.TokenType.*;
 
 public class Scanner {
     private String source;
-    private List<Token> tokens;
-    private int start;
-    private int current;
-    private int line;
+    private List<Token> tokens = new ArrayList<>();
+
+    private int start = 0;
+    private int current = 0;
+    private int line = 1;
+
     private static final Map<String, TokenType> keywords;
 
     static {
@@ -38,11 +40,8 @@ public class Scanner {
     }
 
     public Scanner(String source) {
+        if (source == null) throw new IllegalArgumentException("source code should not be null!");
         this.source = source;
-        tokens = new ArrayList<>();
-        start = 0;
-        current = 0;
-        line = 1;
     }
 
     public List<Token> scanTokens() {
@@ -55,12 +54,12 @@ public class Scanner {
     }
 
     //tells us if we’ve consumed all the characters
-    public boolean isEnd() {
+    private boolean isEnd() {
         return current >= source.length();
     }
 
-    public void scantToken() {
-        char c = advance();
+    private void scantToken() {
+        var c = advance();
         switch (c) {
             case '(':
                 addToken(LEFT_PAR);
@@ -150,7 +149,7 @@ public class Scanner {
         return false;
     }
 
-    //It’s sort of like advance(), but doesn’t consume the character
+    //It’s sort of like advance(), but does not consume the character
     private char peek() {
         if (isEnd()) return '\0';
         return source.charAt(current);
@@ -165,8 +164,8 @@ public class Scanner {
             Main.error(line, "Unterminated String");
         } else {
             advance();
-            String lexem = source.substring(start + 1, current - 1);
-            addToken(STRING, lexem);
+            var text = source.substring(start + 1, current - 1);
+            addToken(STRING, text);
         }
 
     }
@@ -197,8 +196,8 @@ public class Scanner {
         while (isAlphaNumeric(peek())) {
             advance();
         }
-        String lexem = source.substring(start, current);
-        TokenType type = keywords.get(lexem);
+        var text = source.substring(start, current);
+        var type = keywords.get(text);
         addToken(type == null ? IDF : type);
     }
 
@@ -221,27 +220,36 @@ public class Scanner {
 
     //TODO: adding nested block comments
     private void skipBlockComment() {
-        while ((peek() != '*' && peekNext() != '/') && !isEnd()) {
-            if (peek() == '\n') {
-                line++;
+        var nested = 1;
+        while (nested > 0) {
+            if (isEnd()) {
+                Main.error(line, "Unterminated comment block.");
+                return;
+            }
+            if (peek() == '\n') line++;
+            if (peek() == '/' && peekNext() == '*') {
+                nested++;
+                advance();
+                advance();
+                continue;
+            }
+            if (peek() == '*' && peekNext() == '/') {
+                nested--;
+                advance();
+                advance();
+                continue;
             }
             advance();
         }
-        if (isEnd()) {
-            Main.error(line, "Unterminated block comment.");
-        } else {
-            advance();
-            advance(); //To consume */
-        }
     }
 
-    public void addToken(TokenType type) {
+    private void addToken(TokenType type) {
         addToken(type, null);
     }
 
-    public void addToken(TokenType type, Object literal) {
-        String lexem = source.substring(start, current);
-        tokens.add(new Token(type, lexem, literal, line));
+    private void addToken(TokenType type, Object literal) {
+        var text = source.substring(start, current);
+        tokens.add(new Token(type, text, literal, line));
     }
 
 }

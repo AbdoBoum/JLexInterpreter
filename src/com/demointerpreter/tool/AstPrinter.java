@@ -10,7 +10,7 @@ import com.demointerpreter.lexical_analyzer.TokenType;
 public class AstPrinter implements Expression.Visitor<String> {
 
     /*public static void main(String[] args) {
-        Expression expression = new Expression.Binary(
+        var expression = new Expression.Binary(
                 new Expression.Binary(
                         new Expression.Literal(3),
                         new Token(TokenType.PLUS, "+", null, 1),
@@ -22,9 +22,9 @@ public class AstPrinter implements Expression.Visitor<String> {
                         new Expression.Literal(5)));
 
         System.out.println(new AstPrinter().print(expression));
-    }*/
-
-    String print(Expression expression) {
+    }
+*/
+    public String print(Expression expression) {
         return expression.accept(this);
     }
 
@@ -64,9 +64,9 @@ public class AstPrinter implements Expression.Visitor<String> {
     }
 
     private String parenthesize(String name, Expression... expressions) {
-        StringBuilder builder = new StringBuilder();
+        var builder = new StringBuilder();
         builder.append("(").append(name);
-        for (Expression expression : expressions) {
+        for (var expression : expressions) {
             builder.append(" ");
             builder.append(expression.accept(this));
         }
