@@ -117,4 +117,19 @@ public interface Expression {
             return visitor.visitThisExpression(this);
         }
     }
+
+    class Conditional implements Expression {
+        public Expression expression, thenBranch, elseBranch;
+
+        public Conditional(Expression expression, Expression thenBranch, Expression elseBranch) {
+            this.expression = expression;
+            this.thenBranch = thenBranch;
+            this.elseBranch = elseBranch;
+        }
+
+        @Override
+        public <R> R accept(Visitor<R> visitor) {
+            return null;
+        }
+    }
 }

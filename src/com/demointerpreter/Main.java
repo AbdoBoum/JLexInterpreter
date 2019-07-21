@@ -2,6 +2,8 @@ package com.demointerpreter;
 
 import com.demointerpreter.Parser.Parser;
 import com.demointerpreter.grammar.Expression;
+import com.demointerpreter.interpreter.Interpreter;
+import com.demointerpreter.interpreter.RuntimeError;
 import com.demointerpreter.lexical_analyzer.Scanner;
 import com.demointerpreter.lexical_analyzer.Token;
 import com.demointerpreter.tool.AstPrinter;
@@ -19,6 +21,9 @@ import static com.demointerpreter.lexical_analyzer.TokenType.*;
 public class Main {
 
     private static boolean hadError = false;
+    static boolean hadRuntimeError = false;
+
+    private static final Interpreter interpreter = new Interpreter();
 
     public static void main(String[] args) throws IOException {
         if (args.length > 1) {
@@ -34,6 +39,8 @@ public class Main {
     private static void runFile(String arg) throws IOException {
         byte[] bytes = Files.readAllBytes(Paths.get(arg));
         run(new String(bytes, Charset.defaultCharset()));
+        if (hadError) System.exit(65);
+        if (hadRuntimeError) System.exit(70);
     }
 
     private static void runConsole() throws IOException {
@@ -55,7 +62,7 @@ public class Main {
         Parser parser = new Parser(tokens);
         Expression expression = parser.parse();
         if (hadError) return;
-        System.out.println(new AstPrinter().print(expression));
+        interpreter.interpret(expression);
     }
 
     public static void error(int line, String message) {
@@ -72,8 +79,13 @@ public class Main {
         if(token.getType() == EOF) {
             report(token.getLine(), " at end", message);
         } else {
-            report(token.getLine(), "at " + token.getText(), message);
+            report(token.getLine(), " at " + token.getText(), message);
         }
+    }
+
+    public static void runTimeError(RuntimeError error) {
+        System.err.println(error.toString());
+        hadRuntimeError = true;
     }
 
 }

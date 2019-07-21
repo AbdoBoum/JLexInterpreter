@@ -40,12 +40,13 @@ public class Scanner {
     }
 
     public Scanner(String source) {
-        if (source == null) throw new IllegalArgumentException("source code should not be null!");
+        if (source == null) throw new IllegalArgumentException("Source code should not be null!");
         this.source = source;
     }
 
     public List<Token> scanTokens() {
         while (!isEnd()) {
+            // We are at the beginning of the next lexeme.
             start = current;
             scantToken();
         }
@@ -63,6 +64,9 @@ public class Scanner {
         switch (c) {
             case '(':
                 addToken(LEFT_PAR);
+                break;
+            case ':':
+                addToken(COLON);
                 break;
             case '*':
                 addToken(STAR);
@@ -99,6 +103,9 @@ public class Scanner {
                 break;
             case '=':
                 addToken(match('=') ? EQ_EQ : EQ);
+                break;
+            case '?':
+                addToken(QUESTION);
                 break;
             case '!':
                 addToken(match('=') ? BANG_EQ : BANG);
@@ -155,19 +162,23 @@ public class Scanner {
         return source.charAt(current);
     }
 
+    private char peekNext() {
+        if (current + 1 >= source.length()) return '\0';
+        return source.charAt(current + 1);
+    }
+
     private void string() {
         while (peek() != '"' && !isEnd()) {
             if (peek() == '\n') line++;
             advance();
         }
         if (isEnd()) {
-            Main.error(line, "Unterminated String");
+            Main.error(line, "Unterminated String.");
         } else {
-            advance();
-            var text = source.substring(start + 1, current - 1);
+            advance();     // The closing "
+            var text = source.substring(start + 1, current - 1); // Trim the surrounding quotes
             addToken(STRING, text);
         }
-
     }
 
     private boolean isDigit(char c) {
@@ -187,11 +198,6 @@ public class Scanner {
         addToken(NUMBER, Double.parseDouble(source.substring(start, current)));
     }
 
-    private char peekNext() {
-        if (current + 1 >= source.length()) return '\0';
-        return source.charAt(current + 1);
-    }
-
     private void identifier() {
         while (isAlphaNumeric(peek())) {
             advance();
@@ -207,7 +213,6 @@ public class Scanner {
                 c == '_';
     }
 
-
     private boolean isAlphaNumeric(char c) {
         return isDigit(c) || isAlpha(c);
     }
@@ -218,7 +223,6 @@ public class Scanner {
         }
     }
 
-    //TODO: adding nested block comments
     private void skipBlockComment() {
         var nested = 1;
         while (nested > 0) {
@@ -247,6 +251,7 @@ public class Scanner {
         addToken(type, null);
     }
 
+    // Overload for addToken to handle token with literal values
     private void addToken(TokenType type, Object literal) {
         var text = source.substring(start, current);
         tokens.add(new Token(type, text, literal, line));

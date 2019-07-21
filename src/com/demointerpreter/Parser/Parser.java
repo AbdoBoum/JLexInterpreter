@@ -34,17 +34,40 @@ public class Parser {
         return equality();
     }
 
+    /*private Expression conditional() {
+        var expression = equality();
+        if (match(QUESTION)) {
+            var thenBranch = expression();
+            consume(COLON, "Expect ':' after then branch of conditional expression.");
+            var elseBranch = conditional();
+            expression = new Expression.Conditional(expression, thenBranch, elseBranch);
+        }
+
+        return expression;
+    }*/
+
+    //comma → equality ( "," equality )* ;
+    /*private Expression comma() {
+        var expression = equality();
+        while (match(COMMA)) {
+            var operator = previous();
+            var right = equality();
+            expression = new Expression.Binary(expression, operator, right);
+        }
+        return expression;
+    }*/
+
     private Expression equality() {
-        var expression = comparaison();
+        var expression = comparison();
         while (match(BANG_EQ, EQ_EQ)) {
             var operator = previous();
-            var right = comparaison();
+            var right = comparison();
             expression = new Expression.Binary(expression, operator, right);
         }
         return expression;
     }
 
-    private Expression comparaison() {
+    private Expression comparison() {
         var expression = addition();
         while (match(GREATER, GREATER_EQ, LESS, LESS_EQ)) {
             var operator = previous();
@@ -111,6 +134,7 @@ public class Parser {
         return new ParserError();
     }
 
+    // Discards tokens until it thinks it found a statement boundary
     private void synchronize() {
         advance();
         while (!isAtEnd()) {

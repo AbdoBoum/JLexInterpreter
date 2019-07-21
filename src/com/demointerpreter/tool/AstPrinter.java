@@ -5,6 +5,7 @@ import com.demointerpreter.grammar.Expression;
 import com.demointerpreter.lexical_analyzer.TokenType;
 
 /**
+ * Pretty Printer
  * given a syntax tree, it produces an unambiguous string representation of it
  */
 public class AstPrinter implements Expression.Visitor<String> {

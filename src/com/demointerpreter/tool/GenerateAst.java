@@ -23,7 +23,8 @@ public class GenerateAst {
                 "Unary    : Token operator, Expression right",
                 "Logical  : Expression left, Token operator, Expression right",
                 "Assign   : Token name, Expression value",
-                "This     : Token keyword"
+                "This     : Token keyword",
+                "Conditional: Expression left, Expression thenBranch, Expression elseBranch"
         ));
     }
 
