@@ -2,17 +2,56 @@ package com.demointerpreter.interpreter;
 
 import com.demointerpreter.Main;
 import com.demointerpreter.grammar.Expression;
+import com.demointerpreter.grammar.Statement;
 import com.demointerpreter.lexical_analyzer.Token;
 
-public class Interpreter implements Expression.Visitor<Object> {
+import java.util.List;
 
-    public void interpret(Expression expression) {
+public class Interpreter implements Expression.Visitor<Object>, Statement.Visitor<Void> {
+
+    private Envirenment envirenment = new Envirenment();
+
+    public void interpret(List<Statement> statements) {
         try {
-            Object value = evaluate(expression);
-            System.out.println(stringify(value));
+            for (Statement statement: statements) {
+                execute(statement);
+            }
         }catch (RuntimeError error) {
             Main.runTimeError(error);
         }
+    }
+
+    private void execute(Statement statement) {
+        statement.accept(this);
+    }
+
+    @Override
+    public Void visitExpressionStatement(Statement.Expression statement) {
+        evaluate(statement.expression);
+        return null;
+    }
+
+    @Override
+    public Void visitPrintStatement(Statement.Print statement) {
+        Object value = evaluate(statement.expression);
+        System.out.println(stringify(value));
+        return null;
+    }
+
+    @Override
+    public Void visitVarStatement(Statement.Var statement) {
+        Object value = null;
+        if (statement.initializer != null) {
+            value = evaluate(statement.initializer);
+        }
+        envirenment.define(statement.name.getText(), value);
+        return null;
+    }
+
+    @Override
+    public Void visitBlockStatement(Statement.Block statement) {
+        executeBlock(statement.statements, new Envirenment(envirenment));
+        return null;
     }
 
     @Override
@@ -87,12 +126,36 @@ public class Interpreter implements Expression.Visitor<Object> {
 
     @Override
     public Object visitAssignExpression(Expression.Assign expression) {
-        return null;
+        Object value = evaluate(expression.value);
+        envirenment.assign(expression.name, value);
+        return value;
     }
 
     @Override
     public Object visitThisExpression(Expression.This expression) {
         return null;
+    }
+
+    @Override
+    public Object visitConditionalExpression(Expression.Conditional expression) {
+        return null;
+    }
+
+    @Override
+    public Object visitVariableExpression(Expression.Variable expression) {
+        return envirenment.get(expression.name);
+    }
+
+    private void executeBlock(List<Statement> statements, Envirenment envirenment) {
+        Envirenment previous = this.envirenment;
+        try {
+            this.envirenment = envirenment;
+            for (Statement statement: statements) {
+                execute(statement);
+            }
+        } finally {
+            this.envirenment = previous;
+        }
     }
 
     private Object evaluate(Expression expression) {
@@ -133,4 +196,5 @@ public class Interpreter implements Expression.Visitor<Object> {
         }
         return String.valueOf(object);
     }
+
 }

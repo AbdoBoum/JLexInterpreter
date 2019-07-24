@@ -64,6 +64,16 @@ public class AstPrinter implements Expression.Visitor<String> {
         return expression.keyword.getText();
     }
 
+    @Override
+    public String visitConditionalExpression(Expression.Conditional expression) {
+        return null;
+    }
+
+    @Override
+    public String visitVariableExpression(Expression.Variable expression) {
+        return null;
+    }
+
     private String parenthesize(String name, Expression... expressions) {
         var builder = new StringBuilder();
         builder.append("(").append(name);

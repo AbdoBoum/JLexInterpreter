@@ -2,9 +2,11 @@ package com.demointerpreter.Parser;
 
 import com.demointerpreter.Main;
 import com.demointerpreter.grammar.Expression;
+import com.demointerpreter.grammar.Statement;
 import com.demointerpreter.lexical_analyzer.Token;
 import com.demointerpreter.lexical_analyzer.TokenType;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static com.demointerpreter.lexical_analyzer.TokenType.*;
@@ -22,16 +24,63 @@ public class Parser {
         this.tokens = tokens;
     }
 
-    public Expression parse() {
+    public List<Statement> parse() {
+        List<Statement> statements = new ArrayList<>();
+        while (!isAtEnd()) {
+            statements.add(declaration());
+        }
+        return statements;
+    }
+
+    private Statement declaration() {
         try {
-            return expression();
+            if (match(VAR)) return varDeclaration();
+            return statement();
         } catch (ParserError error) {
+            synchronize();
             return null;
         }
     }
 
+    private Statement varDeclaration() {
+        Token name = consume(IDF, "Expect a variable name.");
+        Expression initializer = null;
+        if (match(EQ)) {
+            initializer = expression();
+        }
+        consume(SEMICOLON, "Expect ';' after variable declaration.");
+        return new Statement.Var(name, initializer);
+    }
+
+    private Statement statement() {
+        if (match(PRINT)) return printStatement();
+        if (match(LEFT_BRACE)) return new Statement.Block(blockStatement());
+        return expressionStatement();
+    }
+
+    private Statement printStatement() {
+        var value = expression();
+        consume(SEMICOLON, "Expect ';' after value.");
+        return new Statement.Print(value);
+    }
+
+    private List<Statement> blockStatement() {
+        List<Statement> statements = new ArrayList<>();
+        while (!check(RIGHT_BRACE) && !isAtEnd()) {
+            statements.add(declaration());
+        }
+        consume(RIGHT_BRACE, "Expect '}' after block.");
+        return statements;
+    }
+
+    private Statement expressionStatement() {
+        var expression = expression();
+        consume(SEMICOLON, "Expect ';' after expression.");
+        return new Statement.Expression(expression);
+    }
+
     private Expression expression() {
-        return equality();
+        return assignment();
     }
 
     /*private Expression conditional() {
@@ -56,6 +105,21 @@ public class Parser {
         }
         return expression;
     }*/
+
+    private Expression assignment() {
+        Expression expression = equality();
+        if (match(EQ)) {
+            Token equals = previous();
+            Expression value = assignment();
+
+            if (expression instanceof Expression.Variable) {
+                Token name = ((Expression.Variable) expression).name;
+                return new Expression.Assign(name, value);
+            }
+            error(equals, "Invalid assignment target.");
+        }
+        return expression;
+    }
 
     private Expression equality() {
         var expression = comparison();
@@ -113,6 +177,9 @@ public class Parser {
         if (match(NIL)) return new Expression.Literal(null);
         if (match(NUMBER, STRING)) {
             return new Expression.Literal(previous().getLiteral());
+        }
+        if (match(IDF)) {
+            return new Expression.Variable(previous());
         }
         if (match(LEFT_PAR)) {
             Expression expression = expression();

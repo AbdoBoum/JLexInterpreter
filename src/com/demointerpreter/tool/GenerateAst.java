@@ -8,7 +8,8 @@ import java.util.List;
 // generate Expression classes
 // path for arg: src\com\demointerpreter\grammar
 public class GenerateAst {
-    public static final String BASE_CLASS_NAME = "Expression";
+    public static final String BASE_CLASS_NAME_EXP = "Expression";
+    public static final String BASE_CLASS_NAME_STMT = "Statement";
 
     public static void main(String[] args) throws IOException {
         if (args.length != 1) {
@@ -16,7 +17,7 @@ public class GenerateAst {
             System.exit(1);
         }
         var outputDir = args[0];
-        defineAst(outputDir, BASE_CLASS_NAME, Arrays.asList(
+        defineAst(outputDir, BASE_CLASS_NAME_EXP, Arrays.asList(
                 "Binary   : Expression left, Token operator, Expression right",
                 "Grouping : Expression expression",
                 "Literal  : Object value",
@@ -24,8 +25,17 @@ public class GenerateAst {
                 "Logical  : Expression left, Token operator, Expression right",
                 "Assign   : Token name, Expression value",
                 "This     : Token keyword",
-                "Conditional: Expression left, Expression thenBranch, Expression elseBranch"
+                "Conditional: Expression left, Expression thenBranch, Expression elseBranch",
+                "Variable : Token name"
         ));
+
+        defineAst(outputDir, BASE_CLASS_NAME_STMT, List.of(
+                "Expression: Expression expression",
+                "Print: Expression expression",
+                "Var: Token name, Expression initializer",
+                "Block: List<Statement> statements"
+        ));
+
     }
 
     private static void defineAst(String outputDir, String baseClassName, List<String> types) throws IOException {
