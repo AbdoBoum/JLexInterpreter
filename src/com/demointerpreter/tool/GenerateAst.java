@@ -18,24 +18,24 @@ public class GenerateAst {
         }
         var outputDir = args[0];
         defineAst(outputDir, BASE_CLASS_NAME_EXP, Arrays.asList(
-                "Binary   : Expression left, Token operator, Expression right",
-                "Grouping : Expression expression",
+                "Binary   : com.demointerpreter.grammar.Expression left, Token operator, com.demointerpreter.grammar.Expression right",
+                "Grouping : com.demointerpreter.grammar.Expression expression",
                 "Literal  : Object value",
-                "Unary    : Token operator, Expression right",
-                "Logical  : Expression left, Token operator, Expression right",
-                "Assign   : Token name, Expression value",
+                "Unary    : Token operator, com.demointerpreter.grammar.Expression right",
+                "Logical  : com.demointerpreter.grammar.Expression left, Token operator, com.demointerpreter.grammar.Expression right",
+                "Assign   : Token name, com.demointerpreter.grammar.Expression value",
                 "This     : Token keyword",
-                "Conditional: Expression left, Expression thenBranch, Expression elseBranch",
                 "Variable : Token name"
         ));
 
         defineAst(outputDir, BASE_CLASS_NAME_STMT, List.of(
-                "Expression: Expression expression",
-                "Print: Expression expression",
-                "Var: Token name, Expression initializer",
-                "Block: List<Statement> statements"
-        ));
-
+                "Expression: com.demointerpreter.grammar.Expression expression",
+                "Print: com.demointerpreter.grammar.Expression expression",
+                "Var: Token name, com.demointerpreter.grammar.Expression initializer",
+                "Block: List<Statement> statements",
+                "If: com.demointerpreter.grammar.Expression condition, Statement thenBranch, Statement elseBranch",
+                "While: com.demointerpreter.grammar.Expression condition, Statement statement"
+                ));
     }
 
     private static void defineAst(String outputDir, String baseClassName, List<String> types) throws IOException {
@@ -48,6 +48,8 @@ public class GenerateAst {
 
     private static void writeBaseClassHeader(String baseClassName, PrintWriter writer) {
         writer.println("package com.demointerpreter.grammar;");
+        writer.println();
+        writer.println("import java.util.List;");
         writer.println();
         writer.println("import com.demointerpreter.lexical_analyzer.Token;");
         writer.println();

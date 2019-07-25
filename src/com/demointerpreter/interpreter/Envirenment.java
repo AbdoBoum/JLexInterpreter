@@ -17,8 +17,12 @@ public class Envirenment {
         this.enclosing = enclosing;
     }
 
-    public void define(String name, Object value) {
-        values.put(name, value);
+    public void define(String name, Object value, int line) {
+        if (!values.containsKey(name)) {
+            values.put(name, value);
+            return;
+        }
+        throw new RuntimeError(new Token(null, name, null, line), "Variable already declared");
     }
 
     public Object get(Token name) {

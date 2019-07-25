@@ -1,5 +1,7 @@
 package com.demointerpreter.grammar;
 
+import java.util.List;
+
 import com.demointerpreter.lexical_analyzer.Token;
 
 public interface Expression {
@@ -14,16 +16,15 @@ public interface Expression {
         R visitLogicalExpression(Logical expression);
         R visitAssignExpression(Assign expression);
         R visitThisExpression(This expression);
-        R visitConditionalExpression(Conditional expression);
         R visitVariableExpression(Variable expression);
     }
 
     class Binary implements Expression {
-        public Expression left;
+        public com.demointerpreter.grammar.Expression left;
         public Token operator;
-        public Expression right;
+        public com.demointerpreter.grammar.Expression right;
 
-        public Binary(Expression left, Token operator, Expression right) {
+        public Binary(com.demointerpreter.grammar.Expression left, Token operator, com.demointerpreter.grammar.Expression right) {
                 this.left = left;
                 this.operator = operator;
                 this.right = right;
@@ -35,9 +36,9 @@ public interface Expression {
  }
 
     class Grouping implements Expression {
-        public Expression expression;
+        public com.demointerpreter.grammar.Expression expression;
 
-        public Grouping(Expression expression) {
+        public Grouping(com.demointerpreter.grammar.Expression expression) {
                 this.expression = expression;
 }
 
@@ -60,9 +61,9 @@ public interface Expression {
 
     class Unary implements Expression {
         public Token operator;
-        public Expression right;
+        public com.demointerpreter.grammar.Expression right;
 
-        public Unary(Token operator, Expression right) {
+        public Unary(Token operator, com.demointerpreter.grammar.Expression right) {
                 this.operator = operator;
                 this.right = right;
 }
@@ -73,11 +74,11 @@ public interface Expression {
  }
 
     class Logical implements Expression {
-        public Expression left;
+        public com.demointerpreter.grammar.Expression left;
         public Token operator;
-        public Expression right;
+        public com.demointerpreter.grammar.Expression right;
 
-        public Logical(Expression left, Token operator, Expression right) {
+        public Logical(com.demointerpreter.grammar.Expression left, Token operator, com.demointerpreter.grammar.Expression right) {
                 this.left = left;
                 this.operator = operator;
                 this.right = right;
@@ -90,9 +91,9 @@ public interface Expression {
 
     class Assign implements Expression {
         public Token name;
-        public Expression value;
+        public com.demointerpreter.grammar.Expression value;
 
-        public Assign(Token name, Expression value) {
+        public Assign(Token name, com.demointerpreter.grammar.Expression value) {
                 this.name = name;
                 this.value = value;
 }
@@ -111,22 +112,6 @@ public interface Expression {
 
         public <R> R accept(Visitor<R> visitor) {
             return visitor.visitThisExpression(this);
-}
- }
-
-    class Conditional implements Expression {
-        public Expression left;
-        public Expression thenBranch;
-        public Expression elseBranch;
-
-        public Conditional(Expression left, Expression thenBranch, Expression elseBranch) {
-                this.left = left;
-                this.thenBranch = thenBranch;
-                this.elseBranch = elseBranch;
-}
-
-        public <R> R accept(Visitor<R> visitor) {
-            return visitor.visitConditionalExpression(this);
 }
  }
 

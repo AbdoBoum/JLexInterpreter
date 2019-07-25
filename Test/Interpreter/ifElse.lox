@@ -1,0 +1,5 @@
+var x = 4;
+if(true and false)
+    print x;
+else
+    print x-1;

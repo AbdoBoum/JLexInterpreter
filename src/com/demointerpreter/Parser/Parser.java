@@ -7,6 +7,7 @@ import com.demointerpreter.lexical_analyzer.Token;
 import com.demointerpreter.lexical_analyzer.TokenType;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import static com.demointerpreter.lexical_analyzer.TokenType.*;
@@ -53,9 +54,67 @@ public class Parser {
     }
 
     private Statement statement() {
+        if (match(FOR)) return forStatement();
+        if (match(WHILE)) return whileStatement();
+        if (match(IF)) return ifStatement();
         if (match(PRINT)) return printStatement();
         if (match(LEFT_BRACE)) return new Statement.Block(blockStatement());
         return expressionStatement();
+    }
+
+    private Statement forStatement() {
+        consume(LEFT_PAR, "Expect '(' after 'for'.");
+        Statement initializer;
+        if (match(SEMICOLON)) {
+            initializer = null;
+        } else if (match(VAR)) {
+            initializer = varDeclaration();
+        } else {
+            initializer = expressionStatement();
+        }
+        Expression condition = null;
+        if (!check(SEMICOLON)) {
+            condition = expression();
+        }
+        consume(SEMICOLON, "Expect ';' after loop condition.");
+        Expression increment = null;
+        if (!check(RIGHT_PAR)) {
+            increment = expression();
+        }
+        consume(RIGHT_PAR, "Expect ')' after for clauses.");
+        var body = statement();
+        if (increment != null) {
+            body = new Statement.Block(Arrays.asList(
+                    body,
+                    new Statement.Expression(increment)
+            ));
+        }
+        if (condition == null) condition = new Expression.Literal(true);
+        body = new Statement.While(condition, body);
+        if (initializer != null) {
+            body = new Statement.Block(Arrays.asList(initializer, body));
+        }
+        return body;
+    }
+
+    private Statement whileStatement() {
+        consume(LEFT_PAR, "Expect '(' after 'while'.");
+        var condition = expression();
+        consume(RIGHT_PAR, "Expect ')' after while condition.");
+        var body = statement();
+        return new Statement.While(condition, body);
+    }
+
+    private Statement ifStatement() {
+        consume(LEFT_PAR, "Expect '(' after 'if'.");
+        var condition = expression();
+        consume(RIGHT_PAR, "Expect ')' after if condition.");
+        var thenBranch = statement();
+        Statement elseStatement = null;
+        if (match(ELSE)) {
+            elseStatement = statement();
+        }
+        return new Statement.If(condition, thenBranch, elseStatement);
     }
 
     private Statement printStatement() {
@@ -107,7 +166,7 @@ public class Parser {
     }*/
 
     private Expression assignment() {
-        Expression expression = equality();
+        var expression = or();
         if (match(EQ)) {
             Token equals = previous();
             Expression value = assignment();
@@ -117,6 +176,26 @@ public class Parser {
                 return new Expression.Assign(name, value);
             }
             error(equals, "Invalid assignment target.");
+        }
+        return expression;
+    }
+
+    private Expression or() {
+        var expression = and();
+        while (match(OR)) {
+            var operation = previous();
+            var right = and();
+            expression = new Expression.Logical(expression, operation, right);
+        }
+        return expression;
+    }
+
+    private Expression and() {
+        var expression = equality();
+        while (match(AND)) {
+            var operatior = previous();
+            var right = equality();
+            expression = new Expression.Logical(expression, operatior, right);
         }
         return expression;
     }
@@ -220,6 +299,7 @@ public class Parser {
         }
     }
 
+    // consume the token
     private boolean match(TokenType... types) {
         for (TokenType type : types) {
             if (check(type)) {
@@ -230,6 +310,7 @@ public class Parser {
         return false;
     }
 
+    // doesn't consume the token
     private boolean check(TokenType type) {
         if (isAtEnd()) return false;
         return peek().getType() == type;

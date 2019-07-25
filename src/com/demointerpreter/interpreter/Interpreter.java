@@ -4,10 +4,13 @@ import com.demointerpreter.Main;
 import com.demointerpreter.grammar.Expression;
 import com.demointerpreter.grammar.Statement;
 import com.demointerpreter.lexical_analyzer.Token;
+import com.demointerpreter.lexical_analyzer.TokenType;
 
 import java.util.List;
 
 public class Interpreter implements Expression.Visitor<Object>, Statement.Visitor<Void> {
+
+    private static Object uninitialized = new Object();
 
     private Envirenment envirenment = new Envirenment();
 
@@ -40,17 +43,35 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
 
     @Override
     public Void visitVarStatement(Statement.Var statement) {
-        Object value = null;
+        Object value = uninitialized;
         if (statement.initializer != null) {
             value = evaluate(statement.initializer);
         }
-        envirenment.define(statement.name.getText(), value);
+        envirenment.define(statement.name.getText(), value, statement.name.getLine());
         return null;
     }
 
     @Override
     public Void visitBlockStatement(Statement.Block statement) {
         executeBlock(statement.statements, new Envirenment(envirenment));
+        return null;
+    }
+
+    @Override
+    public Void visitIfStatement(Statement.If statement) {
+        if (isTruthy(evaluate(statement.condition))) {
+            execute(statement.thenBranch);
+        } else if (statement.elseBranch != null){
+            execute(statement.elseBranch);
+        }
+        return null;
+    }
+
+    @Override
+    public Void visitWhileStatement(Statement.While statement) {
+        while (isTruthy(evaluate(statement.condition))) {
+            execute(statement.statement);
+        }
         return null;
     }
 
@@ -81,16 +102,18 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
             case PLUS:
                 if ((left instanceof Double) && (right instanceof Double)) {
                     return (double) left + (double) right;
-                } else if ((left instanceof String) && (right instanceof String)) {
-                    return String.valueOf(left) + String.valueOf(right);
+                } else if ((left instanceof String) || (right instanceof String)) {
+                    return stringify(left) + stringify(right);
                 }
-                throw new RuntimeError(expression.operator,
-                        "Operands must be two numbers or two strings.");
+                //throw new RuntimeError(expression.operator, "Operands must be two numbers or two strings.");
             case STAR:
                 checkNumberOperands(expression.operator, left, right);
                 return (double) left * (double) right;
             case SLASH:
                 checkNumberOperands(expression.operator, left, right);
+                if (stringify(right).equals(String.valueOf(0))) {
+                    throw new RuntimeError(expression.operator, "ArithmeticException: / by zero");
+                }
                 return (double) left / (double) right;
         }
         return null;
@@ -121,7 +144,13 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
 
     @Override
     public Object visitLogicalExpression(Expression.Logical expression) {
-        return null;
+        Object left = evaluate(expression.left);
+        if (expression.operator.getType() == TokenType.OR) {
+            if (isTruthy(left)) return left;
+        } else if (expression.operator.getType() == TokenType.AND) {
+            if (!isTruthy(left)) return left;
+        }
+        return evaluate(expression.right);
     }
 
     @Override
@@ -137,13 +166,12 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
     }
 
     @Override
-    public Object visitConditionalExpression(Expression.Conditional expression) {
-        return null;
-    }
-
-    @Override
     public Object visitVariableExpression(Expression.Variable expression) {
-        return envirenment.get(expression.name);
+        Object value = envirenment.get(expression.name);
+        if (value == uninitialized) {
+            throw new RuntimeError(expression.name, "Variable must be initialized before use.");
+        }
+        return value;
     }
 
     private void executeBlock(List<Statement> statements, Envirenment envirenment) {
