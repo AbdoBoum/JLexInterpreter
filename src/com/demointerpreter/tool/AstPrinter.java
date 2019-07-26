@@ -65,6 +65,11 @@ public class AstPrinter implements Expression.Visitor<String> {
     }
 
     @Override
+    public String visitCallExpression(Expression.Call expression) {
+        return null;
+    }
+
+    @Override
     public String visitVariableExpression(Expression.Variable expression) {
         return null;
     }

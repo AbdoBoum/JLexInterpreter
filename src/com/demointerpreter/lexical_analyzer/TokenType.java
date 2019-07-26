@@ -10,7 +10,7 @@ public enum TokenType {
 
     // Reserved Words
     CLASS, AND, OR, IF, ELSE, FALSE, TRUE, VAR, FOR, NIL,
-    WHILE, PRINT, RETURN, SUPER, THIS, EOF, FUN;
+    WHILE, PRINT, RETURN, SUPER, THIS, EOF, FUN, BREAK;
 
     @Override
     public String toString() {

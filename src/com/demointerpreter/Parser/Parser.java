@@ -14,6 +14,8 @@ import static com.demointerpreter.lexical_analyzer.TokenType.*;
 
 public class Parser {
 
+    private int loopDepth = 0;
+
     //used to unwind the parser
     private static class ParserError extends RuntimeException {
     }
@@ -54,55 +56,101 @@ public class Parser {
     }
 
     private Statement statement() {
+        if (match(RETURN)) return returnStatement();
+        if (match(FUN)) return function("function");
         if (match(FOR)) return forStatement();
         if (match(WHILE)) return whileStatement();
+        if (match(BREAK)) return breakStatement();
         if (match(IF)) return ifStatement();
         if (match(PRINT)) return printStatement();
         if (match(LEFT_BRACE)) return new Statement.Block(blockStatement());
         return expressionStatement();
     }
 
-    private Statement forStatement() {
-        consume(LEFT_PAR, "Expect '(' after 'for'.");
-        Statement initializer;
-        if (match(SEMICOLON)) {
-            initializer = null;
-        } else if (match(VAR)) {
-            initializer = varDeclaration();
-        } else {
-            initializer = expressionStatement();
-        }
-        Expression condition = null;
+    private Statement returnStatement() {
+        var keyword = previous();
+        Expression value = null;
         if (!check(SEMICOLON)) {
-            condition = expression();
+            value = expression();
         }
-        consume(SEMICOLON, "Expect ';' after loop condition.");
-        Expression increment = null;
+        consume(SEMICOLON, "Expect ';' after return statement.");
+        return new Statement.Return(keyword, value);
+    }
+
+    private Statement function(String kind) {
+        var name = consume(IDF, "Expect " + kind + " name.");
+        consume(LEFT_PAR, "Expect '(' after " + kind + " name.");
+        List<Token> params = new ArrayList<>();
         if (!check(RIGHT_PAR)) {
-            increment = expression();
+            do {
+                params.add(consume(IDF, "Expect parameter name."));
+            } while (match(COMMA));
         }
-        consume(RIGHT_PAR, "Expect ')' after for clauses.");
-        var body = statement();
-        if (increment != null) {
-            body = new Statement.Block(Arrays.asList(
-                    body,
-                    new Statement.Expression(increment)
-            ));
+        consume(RIGHT_PAR, "Expect ')' after parameters.");
+        consume(LEFT_BRACE, "Expect '{' before " + kind + " body.");
+        var body = blockStatement();
+        return new Statement.Function(name, params, body);
+    }
+
+    private Statement forStatement() {
+        loopDepth++;
+        try {
+            consume(LEFT_PAR, "Expect '(' after 'for'.");
+            Statement initializer;
+            if (match(SEMICOLON)) {
+                initializer = null;
+            } else if (match(VAR)) {
+                initializer = varDeclaration();
+            } else {
+                initializer = expressionStatement();
+            }
+            Expression condition = null;
+            if (!check(SEMICOLON)) {
+                condition = expression();
+            }
+            consume(SEMICOLON, "Expect ';' after loop condition.");
+            Expression increment = null;
+            if (!check(RIGHT_PAR)) {
+                increment = expression();
+            }
+            consume(RIGHT_PAR, "Expect ')' after for clauses.");
+            var body = statement();
+            if (increment != null) {
+                body = new Statement.Block(Arrays.asList(
+                        body,
+                        new Statement.Expression(increment)
+                ));
+            }
+            if (condition == null) condition = new Expression.Literal(true);
+            body = new Statement.While(condition, body);
+            if (initializer != null) {
+                body = new Statement.Block(Arrays.asList(initializer, body));
+            }
+            return body;
+        } finally {
+            loopDepth--;
         }
-        if (condition == null) condition = new Expression.Literal(true);
-        body = new Statement.While(condition, body);
-        if (initializer != null) {
-            body = new Statement.Block(Arrays.asList(initializer, body));
-        }
-        return body;
     }
 
     private Statement whileStatement() {
-        consume(LEFT_PAR, "Expect '(' after 'while'.");
-        var condition = expression();
-        consume(RIGHT_PAR, "Expect ')' after while condition.");
-        var body = statement();
-        return new Statement.While(condition, body);
+        loopDepth++;
+        try {
+            consume(LEFT_PAR, "Expect '(' after 'while'.");
+            var condition = expression();
+            consume(RIGHT_PAR, "Expect ')' after while condition.");
+            var body = statement();
+            return new Statement.While(condition, body);
+        } finally {
+            loopDepth--;
+        }
+    }
+
+    private Statement breakStatement() {
+        if (loopDepth == 0) {
+            error(previous(), "Break outside a loop.");
+        }
+        consume(SEMICOLON, "Expect ';' after break.");
+        return null;
     }
 
     private Statement ifStatement() {
@@ -247,7 +295,33 @@ public class Parser {
             var right = unary();
             return new Expression.Unary(operator, right);
         }
-        return primary();
+        return call();
+    }
+
+    private Expression call() {
+        var callee = primary();
+        while (true) {
+            if (match(LEFT_PAR)) {
+                callee = finishCall(callee);
+            } else {
+                break;
+            }
+        }
+        return callee;
+    }
+
+    private Expression finishCall(Expression callee) {
+        List<Expression> args = new ArrayList<>();
+        if (!check(RIGHT_PAR)) {
+            do {
+                if (args.size() >= 255) {
+                    error(peek(), "Cannot have more than 255 arguments.");
+                }
+                args.add(expression());
+            } while (match(COMMA));
+        }
+        Token paren = consume(RIGHT_PAR, "Expect ')' after arguments.");
+        return new Expression.Call(callee, paren, args);
     }
 
     private Expression primary() {

@@ -6,25 +6,36 @@ import com.demointerpreter.grammar.Statement;
 import com.demointerpreter.lexical_analyzer.Token;
 import com.demointerpreter.lexical_analyzer.TokenType;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class Interpreter implements Expression.Visitor<Object>, Statement.Visitor<Void> {
 
     private static Object uninitialized = new Object();
 
-    private Envirenment envirenment = new Envirenment();
+    final Envirenment globals = new Envirenment();
+
+    private Envirenment envirenment = globals;
+
+    public Interpreter() {
+        NativeFunctions nativeFunctions = new NativeFunctions();
+        for (Map.Entry<String, LoxCallable> entry : nativeFunctions.getNativeFunctions().entrySet()) {
+            globals.define(entry.getKey(), entry.getValue());
+        }
+    }
 
     public void interpret(List<Statement> statements) {
         try {
-            for (Statement statement: statements) {
+            for (Statement statement : statements) {
                 execute(statement);
             }
-        }catch (RuntimeError error) {
+        } catch (RuntimeError error) {
             Main.runTimeError(error);
         }
     }
 
-    private void execute(Statement statement) {
+    void execute(Statement statement) {
         statement.accept(this);
     }
 
@@ -61,9 +72,16 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
     public Void visitIfStatement(Statement.If statement) {
         if (isTruthy(evaluate(statement.condition))) {
             execute(statement.thenBranch);
-        } else if (statement.elseBranch != null){
+        } else if (statement.elseBranch != null) {
             execute(statement.elseBranch);
         }
+        return null;
+    }
+
+    @Override
+    public Void visitFunctionStatement(Statement.Function statement) {
+        LoxFunction function = new LoxFunction(statement, envirenment);
+        envirenment.define(statement.name.getText(), function);
         return null;
     }
 
@@ -73,6 +91,12 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
             execute(statement.statement);
         }
         return null;
+    }
+
+    @Override
+    public Void visitReturnStatement(Statement.Return statement) {
+        Object value = (statement.expression != null) ? evaluate(statement.expression) : null;
+        throw new Return(value);
     }
 
     @Override
@@ -166,6 +190,23 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
     }
 
     @Override
+    public Object visitCallExpression(Expression.Call expression) {
+        Object callee = evaluate(expression.callee);
+        List<Object> args = new ArrayList<>();
+        for (Expression argument : expression.arguments) {
+            args.add(evaluate(argument));
+        }
+        LoxCallable function = (LoxCallable) callee;
+        if (!(callee instanceof LoxCallable)) {
+            throw new RuntimeError(expression.paren, "Can only call functions and classes.");
+        }
+        if (args.size() != function.arity()) {
+            throw new RuntimeError(expression.paren, "Expect " + function.arity() + "arguments.");
+        }
+        return function.call(this, args);
+    }
+
+    @Override
     public Object visitVariableExpression(Expression.Variable expression) {
         Object value = envirenment.get(expression.name);
         if (value == uninitialized) {
@@ -174,11 +215,11 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
         return value;
     }
 
-    private void executeBlock(List<Statement> statements, Envirenment envirenment) {
+    void executeBlock(List<Statement> statements, Envirenment envirenment) {
         Envirenment previous = this.envirenment;
         try {
             this.envirenment = envirenment;
-            for (Statement statement: statements) {
+            for (Statement statement : statements) {
                 execute(statement);
             }
         } finally {
@@ -213,12 +254,12 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
         throw new RuntimeError(operator, "Operands must be numbers.");
     }
 
-    private String stringify (Object object) {
+    private String stringify(Object object) {
         if (object == null) return "nil";
         if (object instanceof Double) {
             String text = String.valueOf(object);
             if (text.endsWith(".0")) {
-                text = text.substring(0,text.length() - 2);
+                text = text.substring(0, text.length() - 2);
             }
             return text;
         }

@@ -19,16 +19,29 @@ public class Envirenment {
 
     public void define(String name, Object value, int line) {
         if (!values.containsKey(name)) {
-            values.put(name, value);
+            define(name, value);
             return;
         }
         throw new RuntimeError(new Token(null, name, null, line), "Variable already declared");
     }
 
+    void define(Token name, Object value) {
+        if (values.containsKey(name.getText()))
+            throw new RuntimeError(name, "variable is already defined.");
+
+        define(name.getText(), value);
+    }
+
+    void define(String name, Object value) {
+        values.put(name, value);
+    }
+
+
     public Object get(Token name) {
         if (values.containsKey(name.getText())) {
             return values.get(name.getText());
-        } if (enclosing!= null) {
+        }
+        if (enclosing != null) {
             return enclosing.get(name);
         }
         throw new RuntimeError(name, "Undefined variable '" + name.getText() + "'");
@@ -38,7 +51,8 @@ public class Envirenment {
         if (values.containsKey(name.getText())) {
             values.replace(name.getText(), value);
             return;
-        } if (enclosing != null) {
+        }
+        if (enclosing != null) {
             enclosing.assign(name, value);
             return;
         }

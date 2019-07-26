@@ -16,6 +16,7 @@ public interface Expression {
         R visitLogicalExpression(Logical expression);
         R visitAssignExpression(Assign expression);
         R visitThisExpression(This expression);
+        R visitCallExpression(Call expression);
         R visitVariableExpression(Variable expression);
     }
 
@@ -112,6 +113,22 @@ public interface Expression {
 
         public <R> R accept(Visitor<R> visitor) {
             return visitor.visitThisExpression(this);
+}
+ }
+
+    class Call implements Expression {
+        public com.demointerpreter.grammar.Expression callee;
+        public Token paren;
+        public List<com.demointerpreter.grammar.Expression> arguments;
+
+        public Call(com.demointerpreter.grammar.Expression callee, Token paren, List<com.demointerpreter.grammar.Expression> arguments) {
+                this.callee = callee;
+                this.paren = paren;
+                this.arguments = arguments;
+}
+
+        public <R> R accept(Visitor<R> visitor) {
+            return visitor.visitCallExpression(this);
 }
  }
 

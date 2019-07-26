@@ -26,7 +26,7 @@ public class Scanner {
         keywords.put("else", ELSE);
         keywords.put("false", FALSE);
         keywords.put("for", FOR);
-        keywords.put("fun", FUN);
+        keywords.put("function", FUN);
         keywords.put("if", IF);
         keywords.put("nil", NIL);
         keywords.put("or", OR);
@@ -37,6 +37,7 @@ public class Scanner {
         keywords.put("true", TRUE);
         keywords.put("var", VAR);
         keywords.put("while", WHILE);
+        keywords.put("break", BREAK);
     }
 
     public Scanner(String source) {

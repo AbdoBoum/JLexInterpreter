@@ -14,7 +14,9 @@ public interface Statement {
         R visitVarStatement(Var statement);
         R visitBlockStatement(Block statement);
         R visitIfStatement(If statement);
+        R visitFunctionStatement(Function statement);
         R visitWhileStatement(While statement);
+        R visitReturnStatement(Return statement);
     }
 
     class Expression implements Statement {
@@ -83,6 +85,22 @@ public interface Statement {
 }
  }
 
+    class Function implements Statement {
+        public Token name;
+        public List<Token> params;
+        public List<Statement> body;
+
+        public Function(Token name, List<Token> params, List<Statement> body) {
+                this.name = name;
+                this.params = params;
+                this.body = body;
+}
+
+        public <R> R accept(Visitor<R> visitor) {
+            return visitor.visitFunctionStatement(this);
+}
+ }
+
     class While implements Statement {
         public com.demointerpreter.grammar.Expression condition;
         public Statement statement;
@@ -94,6 +112,20 @@ public interface Statement {
 
         public <R> R accept(Visitor<R> visitor) {
             return visitor.visitWhileStatement(this);
+}
+ }
+
+    class Return implements Statement {
+        public Token keyword;
+        public com.demointerpreter.grammar.Expression expression;
+
+        public Return(Token keyword, com.demointerpreter.grammar.Expression expression) {
+                this.keyword = keyword;
+                this.expression = expression;
+}
+
+        public <R> R accept(Visitor<R> visitor) {
+            return visitor.visitReturnStatement(this);
 }
  }
  }

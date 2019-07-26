@@ -25,6 +25,7 @@ public class GenerateAst {
                 "Logical  : com.demointerpreter.grammar.Expression left, Token operator, com.demointerpreter.grammar.Expression right",
                 "Assign   : Token name, com.demointerpreter.grammar.Expression value",
                 "This     : Token keyword",
+                "Call     : com.demointerpreter.grammar.Expression callee, Token paren, List<com.demointerpreter.grammar.Expression> arguments",
                 "Variable : Token name"
         ));
 
@@ -34,8 +35,10 @@ public class GenerateAst {
                 "Var: Token name, com.demointerpreter.grammar.Expression initializer",
                 "Block: List<Statement> statements",
                 "If: com.demointerpreter.grammar.Expression condition, Statement thenBranch, Statement elseBranch",
-                "While: com.demointerpreter.grammar.Expression condition, Statement statement"
-                ));
+                "Function: Token name, List<Token> params, List<Statement> body",
+                "While: com.demointerpreter.grammar.Expression condition, Statement statement",
+                "Return: Token keyword, com.demointerpreter.grammar.Expression expression"
+        ));
     }
 
     private static void defineAst(String outputDir, String baseClassName, List<String> types) throws IOException {
