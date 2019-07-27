@@ -6,6 +6,7 @@ import com.demointerpreter.interpreter.Interpreter;
 import com.demointerpreter.interpreter.RuntimeError;
 import com.demointerpreter.lexical_analyzer.Scanner;
 import com.demointerpreter.lexical_analyzer.Token;
+import com.demointerpreter.semanticAnalysis.Resolver;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -60,6 +61,9 @@ public class Main {
         List<Token> tokens = scanner.scanTokens();
         Parser parser = new Parser(tokens);
         List<Statement> statements = parser.parse();
+        if (hadError) return;
+        Resolver resolver = new Resolver(interpreter);
+        resolver.resolve(statements);
         if (hadError) return;
         interpreter.interpret(statements);
     }

@@ -58,4 +58,20 @@ public class Envirenment {
         }
         throw new RuntimeError(name, "Undefined variable '" + name.getText() + "'.");
     }
+
+    public Object getAt(int distance, String name) {
+        return ancetor(distance).values.get(name);
+    }
+
+    private Envirenment ancetor(int distance) {
+        Envirenment envirenment = this;
+        for (var i = 0; i < distance; i++) {
+            envirenment = envirenment.enclosing;
+        }
+        return envirenment;
+    }
+
+    public void assignAt(int distance, Token name, Object value) {
+        ancetor(distance).values.put(name.getText(), value);
+    }
 }

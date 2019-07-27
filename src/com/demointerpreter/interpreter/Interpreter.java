@@ -7,6 +7,7 @@ import com.demointerpreter.lexical_analyzer.Token;
 import com.demointerpreter.lexical_analyzer.TokenType;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -17,6 +18,8 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
     final Envirenment globals = new Envirenment();
 
     private Envirenment envirenment = globals;
+
+    private final Map<Expression, Integer> locals = new HashMap<>();
 
     public Interpreter() {
         NativeFunctions nativeFunctions = new NativeFunctions();
@@ -37,6 +40,10 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
 
     void execute(Statement statement) {
         statement.accept(this);
+    }
+
+    public void resolve(Expression expression, int depth) {
+        locals.put(expression, depth);
     }
 
     @Override
@@ -180,7 +187,12 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
     @Override
     public Object visitAssignExpression(Expression.Assign expression) {
         Object value = evaluate(expression.value);
-        envirenment.assign(expression.name, value);
+        Integer distance = locals.get(expression);
+        if (distance != null) {
+            envirenment.assignAt(distance, expression.name, value);
+        } else {
+            globals.assign(expression.name, value);
+        }
         return value;
     }
 
@@ -208,11 +220,24 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
 
     @Override
     public Object visitVariableExpression(Expression.Variable expression) {
-        Object value = envirenment.get(expression.name);
+        return lookUpVariable(expression.name, expression);
+        /*Object value = envirenment.get(expression.name);
         if (value == uninitialized) {
             throw new RuntimeError(expression.name, "Variable must be initialized before use.");
         }
-        return value;
+        return value;*/
+    }
+
+    private Object lookUpVariable(Token name, Expression expr) {
+        Integer distance = locals.get(expr);
+        Object value;
+        if (distance != null) {
+            value = envirenment.getAt(distance, name.getText());
+        } else {
+            value = globals.get(name);
+        }
+        if (value != uninitialized) return value;
+        throw new RuntimeError(name, "Variable must be initialized before use.");
     }
 
     void executeBlock(List<Statement> statements, Envirenment envirenment) {
