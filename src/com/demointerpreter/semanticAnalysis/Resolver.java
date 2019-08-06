@@ -54,6 +54,13 @@ public class Resolver implements Expression.Visitor<Void>, Statement.Visitor<Voi
     }
 
     @Override
+    public Void visitClassStatement(Statement.Class statement) {
+        declare(statement.name);
+        define(statement.name);
+        return null;
+    }
+
+    @Override
     public Void visitIfStatement(Statement.If statement) {
         resolve(statement.condition);
         resolve(statement.thenBranch);
@@ -136,6 +143,19 @@ public class Resolver implements Expression.Visitor<Void>, Statement.Visitor<Voi
         for (var arg : expression.arguments) {
             resolve(arg);
         }
+        return null;
+    }
+
+    @Override
+    public Void visitGetExpression(Expression.Get expression) {
+        //the property itself is dynamically evaluated
+        return null;
+    }
+
+    @Override
+    public Void visitSetExpression(Expression.Set expression) {
+        resolve(expression.value);
+        resolve(expression.object);
         return null;
     }
 

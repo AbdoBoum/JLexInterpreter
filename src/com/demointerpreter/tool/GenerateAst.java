@@ -26,6 +26,8 @@ public class GenerateAst {
                 "Assign   : Token name, com.demointerpreter.grammar.Expression value",
                 "This     : Token keyword",
                 "Call     : com.demointerpreter.grammar.Expression callee, Token paren, List<com.demointerpreter.grammar.Expression> arguments",
+                "Get      : com.demointerpreter.grammar.Expression object, Token name",
+                "Set      : com.demointerpreter.grammar.Expression object, Token name, com.demointerpreter.grammar.Expression value",
                 "Variable : Token name"
         ));
 
@@ -34,6 +36,7 @@ public class GenerateAst {
                 "Print: com.demointerpreter.grammar.Expression expression",
                 "Var: Token name, com.demointerpreter.grammar.Expression initializer",
                 "Block: List<Statement> statements",
+                "Class: Token name, List<Statement.Function> methods",
                 "If: com.demointerpreter.grammar.Expression condition, Statement thenBranch, Statement elseBranch",
                 "Function: Token name, List<Token> params, List<Statement> body",
                 "While: com.demointerpreter.grammar.Expression condition, Statement statement",

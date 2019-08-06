@@ -17,6 +17,8 @@ public interface Expression {
         R visitAssignExpression(Assign expression);
         R visitThisExpression(This expression);
         R visitCallExpression(Call expression);
+        R visitGetExpression(Get expression);
+        R visitSetExpression(Set expression);
         R visitVariableExpression(Variable expression);
     }
 
@@ -129,6 +131,36 @@ public interface Expression {
 
         public <R> R accept(Visitor<R> visitor) {
             return visitor.visitCallExpression(this);
+}
+ }
+
+    class Get implements Expression {
+        public com.demointerpreter.grammar.Expression object;
+        public Token name;
+
+        public Get(com.demointerpreter.grammar.Expression object, Token name) {
+                this.object = object;
+                this.name = name;
+}
+
+        public <R> R accept(Visitor<R> visitor) {
+            return visitor.visitGetExpression(this);
+}
+ }
+
+    class Set implements Expression {
+        public com.demointerpreter.grammar.Expression object;
+        public Token name;
+        public com.demointerpreter.grammar.Expression value;
+
+        public Set(com.demointerpreter.grammar.Expression object, Token name, com.demointerpreter.grammar.Expression value) {
+                this.object = object;
+                this.name = name;
+                this.value = value;
+}
+
+        public <R> R accept(Visitor<R> visitor) {
+            return visitor.visitSetExpression(this);
 }
  }
 

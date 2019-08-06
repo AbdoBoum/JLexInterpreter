@@ -57,6 +57,7 @@ public class Parser {
 
     private Statement statement() {
         if (match(RETURN)) return returnStatement();
+        if (match(CLASS)) return classDeclaration();
         if (match(FUN)) return function("function");
         if (match(FOR)) return forStatement();
         if (match(WHILE)) return whileStatement();
@@ -70,14 +71,26 @@ public class Parser {
     private Statement returnStatement() {
         var keyword = previous();
         Expression value = null;
-        if (!check(SEMICOLON)) {
+        if (!check(SEMICOLON) && !isAtEnd()) {
             value = expression();
         }
         consume(SEMICOLON, "Expect ';' after return statement.");
         return new Statement.Return(keyword, value);
     }
 
-    private Statement function(String kind) {
+    private Statement classDeclaration() {
+        var name = consume(IDF, "Expect a class name.");
+        consume(LEFT_BRACE, "Expect '{' after class name.");
+        List<Statement.Function> methods = new ArrayList<>();
+        while (!check(RIGHT_BRACE)) {
+            methods.add(function("method"));
+        }
+        consume(RIGHT_BRACE, "Expect '}' after class declaration.");
+
+        return new Statement.Class(name, methods);
+    }
+
+    private Statement.Function function(String kind) {
         var name = consume(IDF, "Expect " + kind + " name.");
         consume(LEFT_PAR, "Expect '(' after " + kind + " name.");
         List<Token> params = new ArrayList<>();
@@ -222,6 +235,9 @@ public class Parser {
             if (expression instanceof Expression.Variable) {
                 Token name = ((Expression.Variable) expression).name;
                 return new Expression.Assign(name, value);
+            } else if (expression instanceof Expression.Get) {
+                var get = (Expression.Get) expression;
+                return new Expression.Set(get.object, get.name, value);
             }
             error(equals, "Invalid assignment target.");
         }
@@ -303,6 +319,9 @@ public class Parser {
         while (true) {
             if (match(LEFT_PAR)) {
                 callee = finishCall(callee);
+            } else if (match(DOT)) {
+                var name = consume(IDF, "Expect property name after '.'.");
+                callee = new Expression.Get(callee, name);
             } else {
                 break;
             }

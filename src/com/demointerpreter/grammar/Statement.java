@@ -13,6 +13,7 @@ public interface Statement {
         R visitPrintStatement(Print statement);
         R visitVarStatement(Var statement);
         R visitBlockStatement(Block statement);
+        R visitClassStatement(Class statement);
         R visitIfStatement(If statement);
         R visitFunctionStatement(Function statement);
         R visitWhileStatement(While statement);
@@ -66,6 +67,20 @@ public interface Statement {
 
         public <R> R accept(Visitor<R> visitor) {
             return visitor.visitBlockStatement(this);
+}
+ }
+
+    class Class implements Statement {
+        public Token name;
+        public List<Statement.Function> methods;
+
+        public Class(Token name, List<Statement.Function> methods) {
+                this.name = name;
+                this.methods = methods;
+}
+
+        public <R> R accept(Visitor<R> visitor) {
+            return visitor.visitClassStatement(this);
 }
  }
 

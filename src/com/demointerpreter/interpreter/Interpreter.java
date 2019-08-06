@@ -76,6 +76,14 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
     }
 
     @Override
+    public Void visitClassStatement(Statement.Class statement) {
+        envirenment.define(statement.name.getText(), null, statement.name.getLine());
+        LoxClass _class = new LoxClass(statement.name.getText());
+        envirenment.assign(statement.name, _class);
+        return null;
+    }
+
+    @Override
     public Void visitIfStatement(Statement.If statement) {
         if (isTruthy(evaluate(statement.condition))) {
             execute(statement.thenBranch);
@@ -216,6 +224,26 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
             throw new RuntimeError(expression.paren, "Expect " + function.arity() + "arguments.");
         }
         return function.call(this, args);
+    }
+
+    @Override
+    public Object visitGetExpression(Expression.Get expression) {
+        var object = evaluate(expression.object);
+        if (object instanceof LoxInstance) {
+            return ((LoxInstance)object).get(expression.name);
+        }
+        throw new RuntimeError(expression.name, "Only instances have properties.");
+    }
+
+    @Override
+    public Object visitSetExpression(Expression.Set expression) {
+        var object = evaluate(expression.object);
+        if (!(object instanceof LoxInstance)) {
+            throw new RuntimeError(expression.name, "Only instances have fields.");
+        }
+        var value = evaluate(expression.value);
+        ((LoxInstance)object).set(expression.name, value);
+        return value;
     }
 
     @Override
